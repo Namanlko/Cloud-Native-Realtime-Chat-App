@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  server:
+    build:
+      context: ./server
+    container_name: game_server
+    ports:
+      - "5000:5000"
+    restart: always
+    env_file:
+      - ./server/.env
+
+  client:
+    build:
+      context: ./client
+    container_name: game_client
+    ports:
+      - "3000:3000"
+    restart: always
+    depends_on:
+      - server
