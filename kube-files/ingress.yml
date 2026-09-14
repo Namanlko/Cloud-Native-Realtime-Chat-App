@@ -1,12 +1,15 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: game-ingress
-  namespace: game
+  name: chat-ingress
+  namespace: chat-app
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+    # Socket.IO keeps a long-lived connection open, so the default ALB idle
+    # timeout (60s) would drop it. Bump it for stable chat connections.
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=3600
 spec:
   rules:
   - http:
@@ -15,13 +18,22 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: game-client
+            name: chat-client
             port:
               number: 80
       - path: /api
         pathType: Prefix
         backend:
           service:
-            name: game-server
+            name: chat-server
+            port:
+              number: 5000
+      # Socket.IO's client hits this path by default (handshake + websocket
+      # upgrade) — must be routed to the server, same as /api.
+      - path: /socket.io
+        pathType: Prefix
+        backend:
+          service:
+            name: chat-server
             port:
               number: 5000

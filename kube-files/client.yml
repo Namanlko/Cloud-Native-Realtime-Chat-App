@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-client
-  namespace: game
+  name: chat-client
+  namespace: chat-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: game-client
+      app: chat-client
   template:
     metadata:
       labels:
-        app: game-client
+        app: chat-client
     spec:
       containers:
-      - name: game-client
-        image: 040494736757.dkr.ecr.us-east-2.amazonaws.com/game-client:latest
+      - name: chat-client
+        image: ${ECR_REGISTRY}/chat-client:latest
         ports:
         - containerPort: 3000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: game-client
-  namespace: game
+  name: chat-client
+  namespace: chat-app
 spec:
   selector:
-    app: game-client
+    app: chat-client
   ports:
     - protocol: TCP
       port: 80

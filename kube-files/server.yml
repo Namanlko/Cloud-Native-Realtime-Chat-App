@@ -1,32 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-server
-  namespace: game
+  name: chat-server
+  namespace: chat-app
 spec:
-  replicas: 2
+  # Kept at 1: chat state (messages, online users) lives in-memory in this
+  # process. With replicas > 1 and no shared pub/sub (e.g. a Redis adapter
+  # for Socket.IO), users landing on different pods wouldn't see each
+  # other's messages. See README "Scaling note" before raising this.
+  replicas: 1
   selector:
     matchLabels:
-      app: game-server
+      app: chat-server
   template:
     metadata:
       labels:
-        app: game-server
+        app: chat-server
     spec:
       containers:
-      - name: game-server
-        image: 040494736757.dkr.ecr.us-east-2.amazonaws.com/game-server:latest
+      - name: chat-server
+        image: ${ECR_REGISTRY}/chat-server:latest
         ports:
         - containerPort: 5000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: game-server
-  namespace: game
+  name: chat-server
+  namespace: chat-app
 spec:
   selector:
-    app: game-server
+    app: chat-server
   ports:
     - protocol: TCP
       port: 5000
